@@ -8,17 +8,17 @@ this is the place where the project useful. It scans the root directory, and rea
 
 you need admin privileges to run this project (because of the dism usage) (or use executable, it has a prompt for the admin privileges)
 
-this is my usb's root directory:
+## this is my usb's root directory:
 ![usb root directory](https://raw.githubusercontent.com/maysu1914/bootable-usb-media-manager/readme/readme_files/usb_root.jpg)
 
-first page of the project:
+## first page of the project:
 ![first page](https://raw.githubusercontent.com/maysu1914/bootable-usb-media-manager/readme/readme_files/cmd_1.jpg)
 
-media selection and existed media's folder:
+## media selection and existed media's folder:
 ![existed media folder](https://raw.githubusercontent.com/maysu1914/bootable-usb-media-manager/readme/readme_files/cmd_2_a.jpg)
 
-you can create new folder for it:
+## you can create new folder for it:
 ![existed media folder new](https://raw.githubusercontent.com/maysu1914/bootable-usb-media-manager/readme/readme_files/cmd_2_b.jpg)
 
-success page:
+## success page:
 ![success](https://raw.githubusercontent.com/maysu1914/bootable-usb-media-manager/readme/readme_files/cmd_3.jpg)
