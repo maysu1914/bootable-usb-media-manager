@@ -6,6 +6,8 @@ I have a bootable usb which has installation medias of bunch of operating system
 
 this is the place where the project useful. It scans the root directory, and read the media files (extract the info of them) and I select the OS I wanted, it move the old files to its folder (with a question, or you can create new one) and moves the new ones to the root directory.
 
+you need admin privileges to run this project (because of the dism usage) (or use executable, it has a prompt for the admin privileges)
+
 this is my usb's root directory:
 ![usb root directory](https://raw.githubusercontent.com/maysu1914/bootable-usb-media-manager/readme/readme_files/usb_root.jpg)
 
