@@ -1,10 +1,10 @@
 # bootable-usb-media-manager
-Makes easy to manage Windows Installation media files in the bootable USB.
+Makes it easy to manage Windows Installation media files in the bootable USB.
 
 # the scenario
-I have a bootable usb which has installation medias of bunch of operating systems in it (windows). All the OS files has own folder -of course- and when I want to install one, I move the existing installation medias to its folder and move the new one to the root directory of the USB.
+I have a bootable USB that has installation media files of operating systems in it (windows). All the OS files have their own folder, when I want to install one, I move the current OS files to its folder from the root directory and move the new OS files to the root directory of the USB.
 
-this is the place where the project useful. It scans the root directory, and read the media files (extract the info of them) and I select the OS I wanted, it move the old files to its folder (with a question, or you can create new one) and moves the new ones to the root directory.
+this is the place where the project comes useful. It scans the root directory and reads all files of OSes (extracts the info from them) and the user selects the OS, it moves the current OS files to its own folder (or you can create a new folder) and moves the new OS files to the root directory.
 
 you need admin privileges to run this project (because of the dism usage) (or use executable, it has a prompt for the admin privileges)
 
