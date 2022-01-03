@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
 from glob import glob
 
 from system.utils import string_to_dict
@@ -9,6 +10,7 @@ from system.utils import string_to_dict
 class DirectoryService:
     def __init__(self):
         self.detail_files = ["\\sources\\install.esd", "\\sources\\install.wim", "\\sources\\boot.wim"]
+        self.executor = ThreadPoolExecutor()
 
     @staticmethod
     def _is_empty(path):
@@ -71,6 +73,7 @@ class DirectoryService:
 
     def get_windows_image_details(self, paths=None):
         details = []
+        path_and_threads = []
         paths = self.children if not paths else paths
         if not isinstance(paths, list):
             paths = [paths]
@@ -78,6 +81,9 @@ class DirectoryService:
             if not self._is_windows_image(path):
                 continue
             detail_filename = self._get_source_filename(path)
-            detail = subprocess.getoutput(f"""dism /Get-WimInfo /WimFile:"{path}{detail_filename}" /index:1""")
-            details.append({path: string_to_dict(detail, remove_last_line=True)})
+            command = f"""dism /Get-WimInfo /WimFile:"{path}{detail_filename}" /index:1"""
+            path_and_threads.append({path: self.executor.submit(subprocess.getoutput, command)})
+        for path_and_thread in path_and_threads:
+            (path, thread) = path_and_thread.popitem()
+            details.append({path: string_to_dict(thread.result(), remove_last_line=True)})
         return details
