@@ -1,41 +1,43 @@
 from slugify import slugify
 
-from system.services import DirectoryService
+from system.exceptions import AdminPrivilegesException
+from system.services import DirectoryService, WindowsImageService
 from system.utils import get_last_item_from_path
 
 
 class BootableUSB:
-    service = DirectoryService()
+    directory_service = DirectoryService()
+    windows_service = WindowsImageService()
 
     def __init__(self):
-        self.default_folder_name = "%(Name)s_%(Architecture)s_%(Languages)s_%(Created)s"
-        self.windows_image_details = self.service.get_windows_image_details()
-        self.media_files = ['sources', 'support', 'efi', 'boot', 'upgrade', 'autorun.inf', 'bootmgr', 'bootmgr.efi',
-                            'setup.exe', 'Boot', 'EFI', 'en-us', 'HBCD_PE.ini', 'Version.txt']
+        self.default_folder_format = "%(Name)s_%(Architecture)s_%(Languages)s_%(Created)s"
+        try:
+            self.windows_image_details = self.windows_service.get_windows_image_details(self.directory_service.children)
+        except AdminPrivilegesException as e:
+            self.windows_image_details = []
+            print(e)
+        self.media_files = self.windows_service.media_files + ['Boot', 'EFI', 'en-us', 'HBCD_PE.ini', 'Version.txt']
         self.visible_keys = ["Name", "Architecture", "Created", "Languages"]
 
-    def run(self):
-        self._show_current_media(line_break=True)
-        media_choice = self._get_media_choice()
-        if self.service.has_windows_image:
-            if self.service.empty_children:
-                target_folder_name = self._get_empty_folder_choice()
-                target_folder_name = target_folder_name if target_folder_name else self._get_empty_folder_name()
-            else:
-                target_folder_name = self._get_empty_folder_name()
-            self.service.move_files_and_folders(self.media_files, target_folder_name, path_only=True)
-        if media_choice:
-            media_files = [f"{list(media_choice.keys())[0]}{media_file}" for media_file in self.media_files]
-            self.service.move_files_and_folders(media_files, self.service.main)
-        self._show_current_media()
+    @property
+    def working_directory(self):
+        return self.directory_service.working_directory
 
     @property
-    def _default_folder_name(self):
-        return slugify(self.default_folder_name % {**list(self.service.windows_image_detail.values())[0]})
+    def has_windows_image(self):
+        return self.windows_service.is_windows_image(self.working_directory)
+
+    @property
+    def windows_image_detail(self):
+        return self.windows_service.get_windows_image_details(paths=self.working_directory)[0]
+
+    @property
+    def default_folder_name(self):
+        return slugify(self.default_folder_format % {**list(self.windows_image_detail.values())[0]})
 
     def _show_current_media(self, line_break=False):
-        if self.service.has_windows_image:
-            (path, detail) = self.service.windows_image_detail.popitem()
+        if self.has_windows_image:
+            (path, detail) = self.windows_image_detail.popitem()
             visible_detail = '({})'.format(', '.join([detail.get(key) for key in self.visible_keys]))
             print(f"✓ Current media choice: {visible_detail}" + ("\n" if line_break else ''))
 
@@ -61,7 +63,7 @@ class BootableUSB:
 
     def _get_empty_folder_choice(self):
         choice = None
-        empty_children = self.service.empty_children
+        empty_children = self.directory_service.empty_children
         empty_children.append("Create new folder")
         print("Select a folder to move existed media files to there: ")
         for index, path in enumerate(empty_children, start=1):
@@ -81,14 +83,29 @@ class BootableUSB:
             try:
                 folder_name = input("Folder name: ")
                 if not folder_name:
-                    folder_name = self._default_folder_name
-                self.service.create_directory(folder_name)
+                    folder_name = self.default_folder_name
+                self.directory_service.create_directory(folder_name)
             except FileExistsError:
-                if not self.service.is_empty(folder_name, path_only=True):
+                if not self.directory_service.is_empty(folder_name):
                     print("This folder already exists and not empty.")
                     folder_name = None
         print()
         return folder_name
+
+    def run(self):
+        self._show_current_media(line_break=True)
+        media_choice = self._get_media_choice()
+        if self.has_windows_image:
+            if self.directory_service.empty_children:
+                target_folder_name = self._get_empty_folder_choice()
+                target_folder_name = target_folder_name if target_folder_name else self._get_empty_folder_name()
+            else:
+                target_folder_name = self._get_empty_folder_name()
+            self.directory_service.move_files_and_folders(self.media_files, target_folder_name)
+        if media_choice:
+            media_files = [f"{list(media_choice.keys())[0]}{media_file}" for media_file in self.media_files]
+            self.directory_service.move_files_and_folders(media_files, self.working_directory)
+        self._show_current_media()
 
 
 if __name__ == "__main__":
